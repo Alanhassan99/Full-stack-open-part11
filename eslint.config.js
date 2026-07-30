@@ -15,7 +15,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ['app.js', 'jest.setup.js', 'pokedex.spec.js', 'e2e-tests/pokedex.spec.js'],
+    files: ['app.js', 'jest.setup.js', 'pokedex.spec.js', 'e2e-tests/pokedex.spec.js', 'e2e-tests/pokedex2.spec.js'],
     languageOptions: {
       ecmaVersion: 2018,
       sourceType: 'commonjs',
