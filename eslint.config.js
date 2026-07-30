@@ -15,7 +15,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ['app.js', 'jest.setup.js', 'pokedex.spec.js', 'e2e-tests/pokedex.spec.js', 'playwright.config.js'],
+    files: ['app.js', 'jest.setup.js', 'pokedex.spec.js', 'e2e-tests/pokedex.spec.js'],
     languageOptions: {
       ecmaVersion: 2018,
       sourceType: 'commonjs',
@@ -60,6 +60,7 @@ module.exports = [
         version: 'detect'
       }
     },
+
     rules: {
       ...react.configs.recommended.rules,
       'indent': ['error', 2],
@@ -72,6 +73,17 @@ module.exports = [
       'arrow-spacing': ['error', { 'before': true, 'after': true }],
       'no-console': 'off',
       'react/prop-types': 0
+    }
+
+  },
+  {
+    files: ['playwright.config.js'],
+    languageOptions: {
+      ecmaVersion: 2018,
+      sourceType: 'module',
+      globals: {
+        ...globals.node
+      }
     }
   }
 ]
