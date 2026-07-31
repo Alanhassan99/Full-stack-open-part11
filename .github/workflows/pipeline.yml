@@ -36,6 +36,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+        if: ${{ github.event_name == 'push' }}
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         env:
