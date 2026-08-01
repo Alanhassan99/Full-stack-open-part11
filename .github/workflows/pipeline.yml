@@ -65,7 +65,7 @@ jobs:
           DEFAULT_BUMP: patch
 
 
-notification-discord: 
+  notification-discord: 
     needs: [tag-release, build_and_test, deploy]
     if: always()
     runs-on: ubuntu latest
