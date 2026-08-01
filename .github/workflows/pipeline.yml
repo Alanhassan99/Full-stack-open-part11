@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:    
+  build_and_test:    
     runs-on: ubuntu-latest    
     steps:      
       - uses: actions/checkout@v6
@@ -18,7 +18,7 @@ jobs:
           node-version: '24'
       - name: Install dependencies        
         run: npm install
-      - name: Check style        
+      - name: Check style         
         run: npm run eslint
       - name: Run npm test      
         run: npm run test
@@ -36,25 +36,54 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  deploy:    
+    needs: [build_and_test]
+    runs-on: ubuntu-latest    
+    steps:      
+      - uses: actions/checkout@v6
       - name: Deploy setup
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   tag-release: 
-    needs: [simple_deployment_pipeline]   
+    needs: [build_and_test, deploy ]   
     runs-on: ubuntu-latest    
     steps: 
       - uses: actions/checkout@v6
-      
+
       - name: Bump version and push tag
-        if: ${{ github.event_name == 'push' }}
-        uses: anothrNick/github-tag-action@1.75.0
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-       
+
+
+  notification-discord: 
+    needs: [build_and_test, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v6
+
+      - name: Discord notification (success)
+        if: ${{ success() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "✅ Deployment succeeded for commit ${{ github.sha }}"
+
+      - name: Discord notification (failure)
+        if: ${{ failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "❌ Build failed.\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}\n${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
