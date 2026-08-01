@@ -38,7 +38,7 @@ jobs:
           retention-days: 30
 
   deploy:    
-    needs: [deploy]
+    needs: [build_and_test]
     runs-on: ubuntu-latest    
     steps:      
       - uses: actions/checkout@v6
@@ -68,7 +68,7 @@ jobs:
   notification-discord: 
     needs: [tag-release, build_and_test, deploy]
     if: always()
-    runs-on: ubuntu latest
+    runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v6
 
@@ -76,16 +76,16 @@ jobs:
         if: ${{ success() }}
         uses: Ilshidur/action-discord@master
         with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        status: ${{job.status}}
-        title: "Deployment succeeded"
-        description: "A new version was deployed"
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{job.status}}
+          title: "Deployment succeeded"
+          description: "A new version was deployed"
 
       - name: Discord notification(failure)
         if: ${{ failure() }}
         uses: Ilshidur/action-discord@master
         with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        status: ${{job.status}}
-        title: "Build failed"
-        description: "Commit ${{ github.sha }} by ${{ github.actor }} broke the build. See: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{job.status}}
+          title: "Build failed"
+          description: "Commit ${{ github.sha }} by ${{ github.actor }} broke the build. See: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
