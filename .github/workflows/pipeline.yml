@@ -66,26 +66,24 @@ jobs:
 
 
   notification-discord: 
-    needs: [tag-release, build_and_test, deploy]
+    needs: [build_and_test, deploy]
     if: always()
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v6
 
-      - name: Discord notification(success)
+      - name: Discord notification (success)
         if: ${{ success() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{job.status}}
-          title: "Deployment succeeded"
-          description: "A new version was deployed"
+          args: "✅ Deployment succeeded for commit ${{ github.sha }}"
 
-      - name: Discord notification(failure)
+      - name: Discord notification (failure)
         if: ${{ failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{job.status}}
-          title: "Build failed"
-          description: "Commit ${{ github.sha }} by ${{ github.actor }} broke the build. See: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          args: "❌ Build failed.\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}\n${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
