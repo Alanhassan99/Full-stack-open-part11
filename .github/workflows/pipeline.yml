@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:    
+  build_and_test:    
     runs-on: ubuntu-latest    
     steps:      
       - uses: actions/checkout@v6
@@ -36,6 +36,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  deploy:    
+    needs: [deploy]
+    runs-on: ubuntu-latest    
+    steps:      
+      - uses: actions/checkout@v6
       - name: Deploy setup
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         uses: superfly/flyctl-actions/setup-flyctl@master
@@ -46,7 +52,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   tag-release: 
-    needs: [simple_deployment_pipeline]   
+    needs: [build_and_test, deploy ]   
     runs-on: ubuntu-latest    
     steps: 
       - uses: actions/checkout@v6
@@ -59,7 +65,7 @@ jobs:
           DEFAULT_BUMP: patch
 
   notification-discord: 
-    needs: [tag-release, simple_deployment_pipeline]
+    needs: [tag-release, build_and_test, deploy]
     if: always()
     runs-on: ubuntu latest
     steps: 
