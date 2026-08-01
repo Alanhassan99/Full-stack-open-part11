@@ -88,4 +88,3 @@ jobs:
         status: ${{job.status}}
         title: "Build failed"
         description: "Commit ${{ github.sha }} by ${{ github.actor }} broke the build. See: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
-       
